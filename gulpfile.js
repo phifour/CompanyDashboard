@@ -36,6 +36,7 @@ var notify = require("gulp-notify");
 var reload = browserSync.reload;
 var config       = require('./gulpconfig')
 var fs           = require('fs')
+var stripDebug = require('gulp-strip-debug');
 
 
 gulp.task('clean', function (done) {
@@ -201,7 +202,8 @@ gulp.task('css', CSSTask)
 gulp.task('js', function() {
   gulp.src(['./src/js/**'])
     .pipe(concat('app.js'))
-    // .pipe(uglifyify())
+    .pipe(uglifyify())
+    .pipe(stripDebug())
     .pipe(gulp.dest('./public/js/'))
 });
 

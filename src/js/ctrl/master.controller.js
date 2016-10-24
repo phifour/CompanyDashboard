@@ -111,8 +111,6 @@ function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
                 employeename: d['Employee name']
             };
         }, function (data) {
-            console.log('xxx', data);
-
             $scope.issuesclosed = 0;
             $scope.issuesopen = 0;
             for (var i = 0; i < data.length; i++) {
