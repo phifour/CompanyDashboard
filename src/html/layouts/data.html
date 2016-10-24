@@ -1,0 +1,24 @@
+<h1>Data View</h1>
+{% raw %}
+<div class="alert alert-warning"  ng-show="dataupdate" role="alert">
+  <strong>Warning! Data has been actualized.</strong>
+</div>
+<table ng-table="tp" class="table table-condensed table-bordered table-striped">
+    <tr ng-repeat="row in $data">
+        <td data-title="'Customer name'" filter="{customername: 'text'}" sortable="'customername'">{{row.customername}}</td>
+        <td data-title="'Submission Timestamp'" sortable="'subtimestamp'">{{row.subtimestamp | date:'dd.MM.yyyy'}}</td>
+        <td data-title="'Customer email address'" filter="{email: 'text'}" sortable="'email'">{{row.email}}</td>
+        <td data-title="'Description'" filter="{description: 'text'}" sortable="'description'">{{row.description}}</td>
+        <td data-title="'Status'" filter="{status: 'text'}" sortable="'status'">{{row.status}}</td>
+        <td data-title="'Closed Timestamp'" sortable="'closedtimestamp'">{{row.closedtimestamp | date:'dd.MM.yyyy'}}</td>       
+        <td data-title="'Employee name'" filter="{employeename: 'text'}" sortable="'employeename'">{{row.employeename}}</td>                   
+                <!--<td data-title="'Age'" filter="{age: 'number'}" sortable="'age'">{{row.age}}</td>-->        
+    </tr>
+</table>
+{% endraw %}
+
+
+
+
+
+
