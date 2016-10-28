@@ -25,22 +25,22 @@ var watchify = require('watchify');
 var browserify = require('browserify');
 // var uglifyify = require('uglifyify');
 var uglifyify = require('gulp-uglifyjs');
-var data         = require('gulp-data')
+var data = require('gulp-data')
 var mergeStream = require('merge-stream');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var hbsfy = require("hbsfy");
 var render = require('gulp-nunjucks-render');
-var path         = require('path');
+var path = require('path');
 var notify = require("gulp-notify");
 var reload = browserSync.reload;
-var config       = require('./gulpconfig')
-var fs           = require('fs')
+var config = require('./gulpconfig')
+var fs = require('fs')
 var stripDebug = require('gulp-strip-debug');
-
+var swPrecache = require('sw-precache');
 
 gulp.task('clean', function (done) {
-  require('del')(['public'], done);
+    require('del')(['public'], done);
 });
 
 // gulp.task('browser-sync', function() {
@@ -53,18 +53,18 @@ gulp.task('clean', function (done) {
 // });
 
 gulp.task('browser-sync', function () {
-  browserSync({
-    notify: false,
-    port: 8000,
-    open: false,
-    server: {
-      baseDir: "public",
-      middleware: function (req, res, next) {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        next();
-      }
-    }
-  });
+    browserSync({
+        notify: false,
+        port: 8000,
+        open: false,
+        server: {
+            baseDir: "public",
+            middleware: function (req, res, next) {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                next();
+            }
+        }
+    });
 });
 
 
@@ -73,188 +73,125 @@ gulp.task('browser-sync', function () {
 var exclude = path.normalize('!**/{' + config.tasks.html.excludeFolders.join(',') + '}/**')
 
 var paths = {
-  src: [path.join(config.root.src, config.tasks.html.src, '/**/*.{' + config.tasks.html.extensions + '}'), exclude],
-  dest: path.join(config.root.dest, config.tasks.html.dest),
+    src: [path.join(config.root.src, config.tasks.html.src, '/**/*.{' + config.tasks.html.extensions + '}'), exclude],
+    dest: path.join(config.root.dest, config.tasks.html.dest),
 }
 
-var getData = function(file) {
-  var dataPath = path.resolve(config.root.src, config.tasks.html.src, config.tasks.html.dataFile)
-  return JSON.parse(fs.readFileSync(dataPath, 'utf8'))
+var getData = function (file) {
+    var dataPath = path.resolve(config.root.src, config.tasks.html.src, config.tasks.html.dataFile)
+    return JSON.parse(fs.readFileSync(dataPath, 'utf8'))
 }
-
-
 
 function handleErrors(errorObject, callback) {
-  notify.onError(errorObject.toString().split(': ').join(':\n')).apply(this, arguments)
-  // Keep gulp from hanging on this task
-  if (typeof this.emit === 'function') this.emit('end')
+    notify.onError(errorObject.toString().split(': ').join(':\n')).apply(this, arguments)
+    // Keep gulp from hanging on this task
+    if (typeof this.emit === 'function') this.emit('end')
 }
 
+var htmlTask = function () {
 
-
-
-var htmlTask = function() {
-
-  return gulp.src(paths.src)
-    .pipe(data(getData))
-    .on('error', handleErrors)
-    .pipe(render({
-      path: [path.join(config.root.src, config.tasks.html.src)],
-      envOptions: {
-        watch: false
-      }
-    }))
-    .on('error', handleErrors)
+    return gulp.src(paths.src)
+        .pipe(data(getData))
+        .on('error', handleErrors)
+        .pipe(render({
+            path: [path.join(config.root.src, config.tasks.html.src)],
+            envOptions: {
+                watch: false
+            }
+        }))
+        .on('error', handleErrors)
     // .pipe(gulpif(global.production, htmlmin(config.tasks.html.htmlmin)))
-    .pipe(gulp.dest(paths.dest))
-    .pipe(browserSync.stream())
+        .pipe(gulp.dest(paths.dest))
+        .pipe(browserSync.stream())
 
 }
 
-gulp.task('html',  htmlTask);
+gulp.task('html', htmlTask);
 
-var dependenciesTask = function() {
+var dependenciesTask = function () {
 
-  var settings = {
-    src: path.join(config.root.src, config.tasks.dependencies.src, '/*.js'),
-    dest: path.join(config.root.dest, config.tasks.dependencies.dest)
-  }
+    var settings = {
+        src: path.join(config.root.src, config.tasks.dependencies.src, '/*.js'),
+        dest: path.join(config.root.dest, config.tasks.dependencies.dest)
+    }
 
-  return gulp.src(settings.src)
-    .pipe(gulp.dest(settings.dest))
-    .pipe(browserSync.stream())
+    return gulp.src(settings.src)
+        .pipe(gulp.dest(settings.dest))
+        .pipe(browserSync.stream())
 }
 
 gulp.task('dependencies', dependenciesTask)
 
-// gulp.task('html', function(){
-//     return gulp.src(['tpl1.nunj', 'tpl2.nunj'])
-//         .pipe( nunj.render() )
-//         .pipe( rename({ extname: '.html' })
-//         .pipe( gulp.dest('dest') );
-// });
+var CSSTask = function () {
 
+    var settings = {
+        src: path.join(config.root.src, config.tasks.css.src, '**/*.*'),
+        dest: path.join(config.root.dest, config.tasks.css.dest)
+    }
 
-
-
-
-// working
-// gulp.task('html', function () {
-//   return gulp.src([
-//     'src/html/layouts/index.html'
-//   ])
-//   .pipe(plugins.swig({
-//     defaults: { cache: false }
-//   }))
-//   .pipe(plugins.htmlmin({
-//     collapseBooleanAttributes: true,
-//     collapseWhitespace: true,
-//     minifyJS: true,
-//     removeAttributeQuotes: true,
-//     removeComments: true,
-//     removeEmptyAttributes: true,
-//     removeOptionalTags: true,
-//     removeRedundantAttributes: true,
-//   })).pipe(gulp.dest('public'))
-//     .pipe(reload({stream: true}));
-// });
-
-
-
-var CSSTask = function() {
-
-  var settings = {
-    src: path.join(config.root.src, config.tasks.css.src, '**/*.*'),
-    dest: path.join(config.root.dest, config.tasks.css.dest)
-  }
-
-  return gulp.src(settings.src)
-    .pipe(gulp.dest(settings.dest))
-    .pipe(browserSync.stream())
+    return gulp.src(settings.src)
+        .pipe(gulp.dest(settings.dest))
+        .pipe(browserSync.stream())
 }
 
 gulp.task('css', CSSTask)
 
-
-//working  gulp.task('css', function () {
-//   return gulp.src('src/css/*.scss')
-//     .pipe(plugins.sourcemaps.init())
-//     .pipe(plugins.sass({ outputStyle: 'compressed' }))
-//     .pipe(plugins.sourcemaps.write('./'))
-//     .pipe(gulp.dest('public/css'))
-//     .pipe(plugins.filter('**/*.css'))
-//     .pipe(reload({stream: true}));
-// });
-
-// gulp.task('misc', function () {
-//   return gulp.src([
-//     // Copy all files
-//     'src/**',
-//     // Exclude the following files
-//     // (other tasks will handle the copying of these files)
-//      '!src/*.html',
-//     // '!src/{css,css/**}',
-//      '!src/{js,js/**}'
-//   ]).pipe(gulp.dest('public'));
-// });
-
-
-gulp.task('js', function() {
-  gulp.src(['./src/js/**'])
-    .pipe(concat('app.js'))
-    .pipe(uglifyify())
-    .pipe(stripDebug())
-    .pipe(gulp.dest('./public/js/'))
+gulp.task('js', function () {
+    gulp.src(['./src/js/**'])
+        .pipe(concat('app.js'))
+        .pipe(uglifyify())
+        .pipe(stripDebug())
+        .pipe(gulp.dest('./public/js/'))
 });
 
 
 function createBundler(src) {
-  var b;
+    var b;
 
-  if (plugins.util.env.production) {
-    b = browserify();
-  }
-  else {
-    b = browserify({
-      cache: {}, packageCache: {}, fullPaths: true,
-      debug: true
-    });
-  }
+    if (plugins.util.env.production) {
+        b = browserify();
+    }
+    else {
+        b = browserify({
+            cache: {}, packageCache: {}, fullPaths: true,
+            debug: true
+        });
+    }
 
-  b.transform(hbsfy);
+    b.transform(hbsfy);
 
-  if (plugins.util.env.production) {
-    b.transform({
-      global: true
-    }, 'uglifyify');
-  }
+    if (plugins.util.env.production) {
+        b.transform({
+            global: true
+        }, 'uglifyify');
+    }
 
-  b.add(src);
-  return b;
+    b.add(src);
+    return b;
 }
 
 var bundlers = {
     'js/app.js': createBundler([
         './src/js/app.js',
         './src/js/ctrl/master.controller.js'
-        ]),
+    ]),
 };
 
 function bundle(bundler, outputPath) {
-  var splitPath = outputPath.split('/');
-  var outputFile = splitPath[splitPath.length - 1];
-  var outputDir = splitPath.slice(0, -1).join('/');
+    var splitPath = outputPath.split('/');
+    var outputFile = splitPath[splitPath.length - 1];
+    var outputDir = splitPath.slice(0, -1).join('/');
 
-  return bundler.bundle()
+    return bundler.bundle()
     // log errors if they happen
-    .on('error', plugins.util.log.bind(plugins.util, 'Browserify Error'))
-    .pipe(source(outputFile))
-    .pipe(buffer())
-    .pipe(plugins.sourcemaps.init({ loadMaps: true })) // loads map from browserify file
-    .pipe(plugins.sourcemaps.write('./')) // writes .map file
-    .pipe(plugins.size({ gzip: true, title: outputFile }))
-    .pipe(gulp.dest('public/' + outputDir))
-    .pipe(reload({ stream: true }));
+        .on('error', plugins.util.log.bind(plugins.util, 'Browserify Error'))
+        .pipe(source(outputFile))
+        .pipe(buffer())
+        .pipe(plugins.sourcemaps.init({ loadMaps: true })) // loads map from browserify file
+        .pipe(plugins.sourcemaps.write('./')) // writes .map file
+        .pipe(plugins.size({ gzip: true, title: outputFile }))
+        .pipe(gulp.dest('public/' + outputDir))
+        .pipe(reload({ stream: true }));
 }
 
 
@@ -276,22 +213,32 @@ gulp.task('fonts', function () {
 
 
 gulp.task('watch', ['build'], function () {
-  gulp.watch(['src/*.html'], ['html']);
-  gulp.watch(['src/**/*.scss'], ['css']);
+    gulp.watch(['src/*.html'], ['html']);
+    gulp.watch(['src/**/*.scss'], ['css']);
 
-  Object.keys(bundlers).forEach(function(key) {
-    var watchifyBundler = watchify(bundlers[key]);
-    watchifyBundler.on('update', function() {
-      return bundle(watchifyBundler, key);
+    Object.keys(bundlers).forEach(function (key) {
+        var watchifyBundler = watchify(bundlers[key]);
+        watchifyBundler.on('update', function () {
+            return bundle(watchifyBundler, key);
+        });
+        bundle(watchifyBundler, key);
     });
-    bundle(watchifyBundler, key);
-  });
 });
 
-gulp.task('build', function() {
+gulp.task('generate-service-worker', function (callback) {
+    var rootDir = 'public';
+    swPrecache.write(path.join(rootDir, 'my-service-worker.js'), {
+        staticFileGlobs: ['src/index.html', 'src/css/*.*', 'src/dependencies/*.js', 'src/data/*.*', 'src/js/app.js'],
+        stripPrefix: 'src'
+    }, callback);
+});
+
+
+
+gulp.task('build', function () {
     // orig    return runSequence('clean', ['css', 'misc', 'html', 'js']);
     //   return runSequence(['css', 'misc', 'html', 'js']);
-   return runSequence('clean', ['css', 'html', 'js','data','img','fonts','dependencies']);
+    return runSequence('clean', ['css', 'html', 'js', 'data', 'img', 'fonts', 'dependencies','generate-service-worker']);
 });
 
 gulp.task('serve', ['browser-sync', 'watch']);

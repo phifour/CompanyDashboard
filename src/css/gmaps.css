@@ -4,11 +4,11 @@
      color: black;
      background-color: white;
      font-family: "Lucida Grande", "Arial", sans-serif;
-     font-size: 10px;
+     font-size: 12px;
      font-weight: bold;
      text-align: center;
      width: 200px;
      height:20px;
-     border: 2px solid black;
+     border: 1px solid black;
      white-space: nowrap;
    }

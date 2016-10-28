@@ -28,7 +28,7 @@ function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
     $scope.data2 = [
         {
             "values": [],      //values - represents the array of {x,y} data points
-            key: 'Clients', //key  - the name of the series.
+            key: 'Customers', //key  - the name of the series.
             color: '#ff7f0e',  //color - optional: choose your own line color.
             strokeWidth: 3,
             classed: 'dashed'
