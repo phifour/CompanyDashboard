@@ -228,7 +228,7 @@ gulp.task('watch', ['build'], function () {
 gulp.task('generate-service-worker', function (callback) {
     var rootDir = 'public';
     swPrecache.write(path.join(rootDir, 'my-service-worker.js'), {
-        staticFileGlobs: ['src/index.html', 'src/css/*.*', 'src/dependencies/*.js', 'src/data/*.*', 'src/js/app.js'],
+        staticFileGlobs: ['index.html','layouts/*.html', 'css/*.*', 'dependencies/*.js', 'data/*.*', 'js/app.js'],
         stripPrefix: 'src'
     }, callback);
 });
