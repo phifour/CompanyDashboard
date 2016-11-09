@@ -139,8 +139,8 @@ gulp.task('css', CSSTask)
 gulp.task('js', function () {
     gulp.src(['./src/js/**'])
         .pipe(concat('app.js'))
-        .pipe(uglifyify())
-        .pipe(stripDebug())
+      //  .pipe(uglifyify())
+      //  .pipe(stripDebug())
         .pipe(gulp.dest('./public/js/'))
 });
 
@@ -173,7 +173,10 @@ function createBundler(src) {
 var bundlers = {
     'js/app.js': createBundler([
         './src/js/app.js',
-        './src/js/ctrl/master.controller.js'
+        './src/js/ctrl/main.controller.js',
+        './src/js/ctrl/geospatial.controller.js',
+        './src/js/ctrl/keymetrics.controller.js',
+        './src/js/ctrl/dataview.controller.js'                
     ]),
 };
 

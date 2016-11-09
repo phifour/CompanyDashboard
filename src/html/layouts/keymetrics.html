@@ -2,7 +2,7 @@
 <div class="alert alert-warning" ng-show="dataupdate" role="alert">
   <strong>Warning! Data has been actualized.</strong>
 </div>
-<div class="container">
+<div class="container" ng-controller="KeyMetricsCtrl">
     <h1>Key Metrics</h1>
     <h3>Open issues: {{issuesopen}}, Closed issues: {{issuesclosed}}</h3>
     <nvd3 options="options" data="data"></nvd3>

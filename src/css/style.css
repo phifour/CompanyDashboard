@@ -18,7 +18,7 @@ html, body {
       }
       th, td 
       {
-          border: 1px solid black;
+          border: 10px solid black;
           width: 30px;
       }
 

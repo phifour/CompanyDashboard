@@ -1,15 +1,11 @@
+app.controller('KeyMetricsCtrl', ['$scope', '$element', '$http', '$interval', 'NgTableParams', KeyMetricsCtrl]);
 
-app.controller('MasterCtrl', ['$scope', '$cookieStore', '$http', '$interval', 'NgTableParams', MasterCtrl]);
-
-function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
-    /**
-     * Sidebar Toggle & Cookie Control
-     */
-
-    var mobileView = 992;
+function KeyMetricsCtrl($scope, $element, $http, $interval, NgTableParams) {
 
     var update_interval = 3000;
 
+    var mobileView = 992;
+    
     $scope.dataupdate = false;
 
     $scope.issuesclosed = 0;
@@ -41,6 +37,31 @@ function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
 
         $scope.dataupdate = false;
 
+        d3.csv("data/issues.csv", function (d) {
+            return {
+                customername: d['Customer name'],
+                subtimestamp: Date.parse(d['Submission Timestamp']),
+                email: d['customer email address'],
+                description: d['Description'],
+                status: d['Status'],
+                closedtimestamp: Date.parse(d['Closed Timestamp']),
+                employeename: d['Employee name']
+            };
+        }, function (data) {
+            $scope.issuesclosed = 0;
+            $scope.issuesopen = 0;
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].status == "Closed") {
+                    $scope.issuesclosed = $scope.issuesclosed + 1;
+                    console.log('Issue open', $scope.issuesclosed);
+                } else {
+                    $scope.issuesopen = $scope.issuesopen + 1;
+                }
+            }
+
+            $scope.tp = new NgTableParams({}, { dataset: data });
+        });
+
         $http.get("data/issuecount.json").then(function (response) {
             var data = response.data;
 
@@ -62,18 +83,14 @@ function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
                 dummy.push([d, data[i].Issues]);
             }
 
-            console.log('DATA UPDATED');
-
             $scope.data = [
                 {
                     "key": "Quantity",
                     "bar": true,
                     "values": dummy
                 }
-            ];
-                
+            ];                
             //bugfix
-
             $scope.$apply;  
                                             
         })
@@ -100,30 +117,6 @@ function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
         });
 
 
-        d3.csv("data/issues.csv", function (d) {
-            return {
-                customername: d['Customer name'],
-                subtimestamp: Date.parse(d['Submission Timestamp']),
-                email: d['customer email address'],
-                description: d['Description'],
-                status: d['Status'],
-                closedtimestamp: Date.parse(d['Closed Timestamp']),
-                employeename: d['Employee name']
-            };
-        }, function (data) {
-            $scope.issuesclosed = 0;
-            $scope.issuesopen = 0;
-            for (var i = 0; i < data.length; i++) {
-                if (data[i].status == "Closed") {
-                    $scope.issuesclosed = $scope.issuesclosed + 1;
-                    console.log('Issue open', $scope.issuesclosed);
-                } else {
-                    $scope.issuesopen = $scope.issuesopen + 1;
-                }
-            }
-
-            $scope.tp = new NgTableParams({}, { dataset: data });
-        });
 
     };
 
@@ -135,7 +128,7 @@ function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
         init_load = true;
     }
 
-    $interval(function () { $scope.callAtInterval(); }, update_interval, false);
+    var stopTime = $interval(function () { $scope.callAtInterval(); }, update_interval, false);
 
     $scope.options = {
         chart: {
@@ -243,49 +236,11 @@ function MasterCtrl($scope, $cookieStore, $http, $interval, NgTableParams) {
         }
     };
 
-    $scope.map = { center: { latitude: 48.20705775, longitude: 16.38044357 }, zoom: 8 };
-
-    $scope.places = [];
-    
-    // var options =  { labelClass: 'marker_labels', labelAnchor: '12 60', labelContent: 'm222' }
-
-    $http.get("data/stations.json").then(function (response) {
-        return response.data.stations;
-    }).then(function (places) {
-        for (var i = 0; i < places.length; i++) {
-            places[i]['options'] = { labelClass: 'labels', labelAnchor: '12 60', labelContent: places[i].title + ' , employees: ' + places[i].employees };
-        }
-        $scope.places = places;
-    });
 
     $scope.customers = [];
 
+         $element.on('$destroy', function() {
+            $interval.cancel(stopTime);
+          });
 
-
-    $scope.getWidth = function () {
-        return window.innerWidth;
-    };
-
-
-    $scope.$watch($scope.getWidth, function (newValue, oldValue) {
-        if (newValue >= mobileView) {
-            if (angular.isDefined($cookieStore.get('toggle'))) {
-                $scope.toggle = !$cookieStore.get('toggle') ? false : true;
-            } else {
-                $scope.toggle = true;
-            }
-        } else {
-            $scope.toggle = false;
-        }
-
-    });
-
-    $scope.toggleSidebar = function () {
-        $scope.toggle = !$scope.toggle;
-        $cookieStore.put('toggle', $scope.toggle);
-    };
-
-    window.onresize = function () {
-        $scope.$apply();
-    };
 }
