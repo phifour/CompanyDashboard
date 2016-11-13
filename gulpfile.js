@@ -231,10 +231,12 @@ gulp.task('watch', ['build'], function () {
 gulp.task('generate-service-worker', function (callback) {
     var rootDir = 'public';
     swPrecache.write(path.join(rootDir, 'my-service-worker.js'), {
-        staticFileGlobs: ['src/index.html','src/layouts/*.html', 'src/css/*.*', 'src/dependencies/*.js', 'src/data/*.*', 'src/js/app.js'],
+        staticFileGlobs: ['src/index.html','src/layouts/*.html', 'src/css/*.*', 'src/dependencies/*.js', 'src/js/app.js'],
         stripPrefix: 'src'
     }, callback);
 });
+
+//, 'src/data/*.*'
 
 gulp.task('build', function () {
     // orig    return runSequence('clean', ['css', 'misc', 'html', 'js']);

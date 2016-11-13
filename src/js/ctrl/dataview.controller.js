@@ -1,11 +1,11 @@
 app.controller('DataViewCtrl', ['$scope', '$element', '$window', '$http', '$interval', 'NgTableParams', DataViewCtrl]);
 
-function DataViewCtrl($scope, $element, $window , $http, $interval, NgTableParams) {
+function DataViewCtrl($scope, $element, $window, $http, $interval, NgTableParams) {
 
     var update_interval = 3000;
 
     var mobileView = 992;
-        var mobileView = 992;
+
     $scope.dataupdate = false;
 
     $scope.mobiletable = [];
@@ -15,17 +15,17 @@ function DataViewCtrl($scope, $element, $window , $http, $interval, NgTableParam
 
     var w = angular.element($window);
     $scope.$watch(
-    function () {
-        return $window.innerWidth;
-    },
-    function (value) {
-        $scope.windowWidth = value;
-    },
-    true
-    );
+        function () {
+            return $window.innerWidth;
+        },
+        function (value) {
+            $scope.windowWidth = value;
+        },
+        true
+        );
 
-    w.bind('resize', function(){
-    $scope.$apply();
+    w.bind('resize', function () {
+        $scope.$apply();
     });
 
 
@@ -62,7 +62,7 @@ function DataViewCtrl($scope, $element, $window , $http, $interval, NgTableParam
 
             $scope.mobiletable = data;
 
-            console.log('Data!!!',data);
+            console.log('Data!!!', data);
 
             $scope.tp = new NgTableParams({}, { dataset: data });
         });
@@ -79,13 +79,9 @@ function DataViewCtrl($scope, $element, $window , $http, $interval, NgTableParam
 
     var stopTime = $interval(function () { $scope.callAtInterval(); }, update_interval, false);
 
-         $element.on('$destroy', function() {
-            $interval.cancel(stopTime);
-          });
-
-
-
-
+    $element.on('$destroy', function () {
+        $interval.cancel(stopTime);
+    });
 
 
 }
